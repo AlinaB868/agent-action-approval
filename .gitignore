@@ -1,0 +1,10 @@
+.venv/
+.env
+**/.env
+__pycache__/
+*.db
+*.db-shm
+*.db-wal
+agent-action-approval-predare.zip
+
+approval_demo/web_app_backup.py
