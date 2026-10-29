@@ -3,5 +3,6 @@
     name: agent-action-approval-demo
     runtime: python
     plan: free
-    buildCommand: pip install fastapi uvicorn python-multipart
+    buildCommand: pip install fastapi uvicorn python-multipart reportlab svglib
     startCommand: uvicorn approval_demo.public_dashboard:app --host 0.0.0.0 --port $PORT
+

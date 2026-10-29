@@ -1,3 +1,8 @@
+from io import BytesIO
+from reportlab.lib.pagesizes import A4
+from reportlab.pdfgen import canvas
+from fastapi.responses import StreamingResponse
+
 from html import escape
 
 from fastapi import FastAPI, Form
@@ -457,7 +462,17 @@ button:disabled {{
     </div>
 </div>
 <div class="card chart-card">
-    <h2>Action Status Distribution</h2>
+    
+    <div style="margin: 24px 0;">
+        <a href="/report.pdf"
+           style="display:inline-block; background:#7651cc; color:white;
+                  padding:14px 22px; border-radius:12px;
+                  text-decoration:none; font-weight:bold;">
+            Download PDF Report
+        </a>
+    </div>
+
+<h2>Action Status Distribution</h2>
     <p class="chart-description">
         Overview of all simulated agent actions.
     </p>
@@ -561,6 +576,7 @@ def demo_approve(action_id: str):
     for action in DEMO_ACTIONS:
         if action["id"] == action_id and action["status"] == "PENDING_APPROVAL":
             action["status"] = "EXECUTED"
+            action["decision_reason"] = "Approved by human reviewer"
             break
     return RedirectResponse("/", status_code=303)
 
@@ -570,6 +586,7 @@ def demo_reject(action_id: str):
     for action in DEMO_ACTIONS:
         if action["id"] == action_id and action["status"] == "PENDING_APPROVAL":
             action["status"] = "REJECTED"
+            action["decision_reason"] = "Rejected by human reviewer"
             break
     return RedirectResponse("/", status_code=303)
 
@@ -595,3 +612,19 @@ def request_action(
     })
 
     return RedirectResponse("/", status_code=303)
+
+
+
+@app.get("/report.pdf")
+def download_pdf_report():
+    from approval_demo.pdf_report import create_report
+
+    buffer = create_report(DEMO_ACTIONS)
+
+    return StreamingResponse(
+        buffer,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": 'attachment; filename="agent-action-approval-report.pdf"'
+        },
+    )
