@@ -447,7 +447,17 @@ label {{
     </div>
 </div>
 <div class="card chart-card">
-    <h2>Action Status Distribution</h2>
+    
+    <div style="margin: 24px 0;">
+        <a href="/report.pdf"
+           style="display:inline-block; background:#7651cc; color:white;
+                  padding:14px 22px; border-radius:12px;
+                  text-decoration:none; font-weight:bold;">
+            Download PDF Report
+        </a>
+    </div>
+
+<h2>Action Status Distribution</h2>
     <p class="chart-description">
         Overview of all simulated agent actions.
     </p>
@@ -564,3 +574,23 @@ def approve(action_id: str):
 def reject(action_id: str):
     reject_action(action_id)
     return RedirectResponse("/", status_code=303)
+
+@app.get("/report.pdf")
+def download_pdf_report():
+    from fastapi.responses import StreamingResponse
+    from approval_demo.pdf_report import create_report
+
+    actions = (
+        get_actions("EXECUTED")
+        + get_actions("PENDING_APPROVAL")
+        + get_actions("REJECTED")
+    )
+
+    return StreamingResponse(
+        create_report(actions),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition":
+                'attachment; filename="agent-action-approval-report.pdf"'
+        },
+    )
